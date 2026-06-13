@@ -60,8 +60,10 @@ class _MeasureScreenState extends ConsumerState<MeasureScreen> {
   var _state = const _MeasureState();
   Timer? _scanTimer;
   Timer? _countdownTimer;
-  final int _scanDurationSec = 3;
   final MeasurementMethod _method = MeasurementMethod.touch;
+
+  int get _scanDurationSec =>
+      ref.read(settingsProvider).valueOrNull?.scanDurationSec ?? 3;
 
   void _startScan() {
     if (_state.scan != _ScanState.idle) return;
