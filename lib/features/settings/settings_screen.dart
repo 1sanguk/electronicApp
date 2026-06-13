@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../data/models/measure_mode.dart';
@@ -113,7 +113,7 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    '하나은행 880-910769-67507',
+                    '카카오페이로 간편하게 후원할 수 있어요',
                     style: TextStyle(fontSize: 15, color: AppTheme.textSecondary),
                   ),
                   const SizedBox(height: 12),
@@ -121,23 +121,18 @@ class SettingsScreen extends ConsumerWidget {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () async {
-                        await Clipboard.setData(const ClipboardData(text: '88091076967507'));
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('계좌번호가 복사되었습니다.', style: TextStyle(fontSize: 16)),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
+                        final uri = Uri.parse('https://open.kakao.com/o/sUlY0nzi');
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primary,
-                        foregroundColor: Colors.white,
+                        backgroundColor: const Color(0xFFFFE000),
+                        foregroundColor: const Color(0xFF3C1E1E),
                         minimumSize: const Size(double.infinity, 52),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text('계좌번호 복사', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+                      child: const Text('카카오페이로 후원하기', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
                     ),
                   ),
                 ],
