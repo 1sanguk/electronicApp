@@ -1,0 +1,1 @@
+enum MeasureMode { single, continuous }
