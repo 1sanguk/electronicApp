@@ -1,5 +1,5 @@
 name: electronic_app
-description: 생체 전류 측정 앱 - Body Current Tracker
+description: 맨발걷기 전류 변화 기록 앱 - Barefoot Walking Current Logger
 publish_to: 'none'
 version: 1.0.0+1
 

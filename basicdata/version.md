@@ -1,5 +1,53 @@
 # 버전 히스토리
 
+## v1.3.0 (2026-06-15)
+
+### 구글 플레이 배포 준비 + 앱 리브랜딩
+
+**앱 이름 변경**
+- 앱 표시 이름을 "건강 전류 측정기" → "맨발걷기 - 전류 기록기"로 변경 (AndroidManifest, iOS Info.plist)
+- Play Store 심사 리스크 회피: "체내/몸속 전류 측정", "건강 상태 측정" 등 진단기기 인상을 주는 표현 → "전류 변화 기록기" 등 트래킹 중심 표현으로 전환
+- README, basicdata/information.md, basicdata/index.html(개인정보처리방침) 동기화
+
+**패키지명 변경**
+- `com.example.electronic_app` → `com.sopstudio.bodycurrent` (build.gradle.kts namespace/applicationId, MainActivity.kt 경로)
+
+**릴리즈 서명**
+- `android/key.jks` keystore 생성 (PKCS12), `android/key.properties` 작성, build.gradle.kts에 signingConfigs 추가
+- `flutter build appbundle` 검증 완료 (app-release.aab)
+
+**권한 정리**
+- 미사용 CAMERA 권한/하드웨어 기능 선언 제거 (개인정보처리방침과 정합성 확보)
+
+**앱 아이콘**
+- 터치 모티프(검정 배경 + 손가락 터치 + 번개) 아이콘으로 교체, flutter_launcher_icons로 재생성
+
+**스토어 등록정보**
+- `basicdata/store_listing.md` 신규 작성 (짧은/전체 설명, 앱 이름)
+- `basicdata/screenshots/` 신규: Play Store용 스크린샷 2장(측정/기록, 1200x2400, RGB) + 기능 그래픽(1024x500) 생성
+- `basicdata/screenshots/promo/` 신규: 캡션 카드 스타일 스크린샷 5종(1080x1920, RGB) — 커버(앱 소개), 측정, 기록&차트, 패턴 비교(주간), 설정/보안
+
+**앱 내부 잔여 구브랜딩 정리**
+- `lib/app.dart`의 `MaterialApp.title`이 여전히 "생체 전류 측정"이었음 → "맨발걷기 - 전류 기록기"로 수정
+- 설정 화면 하단 버전 표기 "생체 전류 측정 앱 v1.0.0" → "맨발걷기 - 전류 기록기 v1.0.0"로 수정
+
+| 분류 | 파일 |
+|------|------|
+| 수정 | `android/app/build.gradle.kts` (applicationId, namespace, signingConfigs) |
+| 수정 | `android/app/src/main/AndroidManifest.xml` (android:label, CAMERA 권한 제거) |
+| 이동 | `android/app/src/main/kotlin/com/example/electronic_app/MainActivity.kt` → `com/sopstudio/bodycurrent/MainActivity.kt` |
+| 수정 | `ios/Runner/Info.plist` (CFBundleDisplayName) |
+| 수정 | `assets/icon/app_icon.png` (아이콘 교체) |
+| 수정 | `pubspec.yaml` (description) |
+| 수정 | `README.md`, `basicdata/information.md`, `basicdata/index.html` |
+| 수정 | `lib/app.dart` (MaterialApp title) |
+| 수정 | `lib/features/settings/settings_screen.dart` (하단 버전 텍스트) |
+| 추가 | `basicdata/store_listing.md` |
+| 추가 | `basicdata/screenshots/screenshot_measure.png`, `screenshot_history.png`, `feature_graphic.png` |
+| 추가(미커밋) | `android/key.jks`, `android/key.properties` (gitignore 처리됨) |
+
+---
+
 ## v1.2.0 (2026-06-13)
 
 ### 연속 측정 모드 및 기록 화면 전면 개편

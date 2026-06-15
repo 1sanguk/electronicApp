@@ -200,7 +200,7 @@ class SettingsScreen extends ConsumerWidget {
             const SizedBox(height: 32),
             Center(
               child: Text(
-                '생체 전류 측정 앱 v1.0.0',
+                '맨발걷기 - 전류 기록기 v1.0.0',
                 style: TextStyle(
                   fontSize: 14,
                   color: AppTheme.textSecondary.withValues(alpha:0.6),

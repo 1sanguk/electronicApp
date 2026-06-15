@@ -14,7 +14,7 @@ class ElectronicApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ProviderScope(
       child: MaterialApp(
-        title: '생체 전류 측정',
+        title: '맨발걷기 - 전류 기록기',
         theme: AppTheme.theme,
         debugShowCheckedModeBanner: false,
         home: const _HomeShell(),

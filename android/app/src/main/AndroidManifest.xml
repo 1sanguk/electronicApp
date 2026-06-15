@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-feature android:name="android.hardware.camera" android:required="false"/>
-    <uses-feature android:name="android.hardware.camera.flash" android:required="false"/>
-
     <application
-        android:label="건강 전류 측정기"
+        android:label="맨발걷기 - 전류 기록기"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

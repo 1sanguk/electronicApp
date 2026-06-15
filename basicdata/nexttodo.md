@@ -17,17 +17,20 @@
 | 측정 결과 공유 기능 | 단일 측정 결과를 이미지/텍스트로 공유 |
 | 주간 탭 레이블 겹침 | 주 수가 많을 때 "N월 N째주" 레이블이 잘릴 수 있음. 축약 포맷 또는 45도 회전 검토 |
 
-## 구글 플레이 배포 (콘솔 인증 완료 후)
+## 구글 플레이 배포 (콘솔 개발자 인증 완료, 2026-06-15)
 
-| 순서 | 항목 | 설명 |
-|------|------|------|
-| 1 | keystore 생성 | `keytool -genkey -v -keystore key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias key` |
-| 2 | key.properties 설정 | `android/key.properties` 파일 생성 후 keystore 경로·비밀번호·alias 입력 |
-| 3 | build.gradle 서명 설정 | `android/app/build.gradle`에 signingConfigs 추가 |
-| 4 | 릴리즈 빌드 | `flutter build appbundle` → `build/app/outputs/bundle/release/app-release.aab` |
-| 5 | 플레이 콘솔 앱 등록 | 앱 이름·설명·스크린샷 2장 이상 업로드 |
-| 6 | 개인정보처리방침 URL 등록 | `https://1sanguk.github.io/electronicApp/basicdata/` |
-| 7 | AAB 업로드 및 심사 제출 | 심사 통과까지 보통 1~3일 소요 |
+| 순서 | 항목 | 설명 | 상태 |
+|------|------|------|------|
+| 0 | applicationId 변경 | `com.example.electronic_app` → `com.sopstudio.bodycurrent`로 변경 (build.gradle.kts, MainActivity.kt 경로, namespace) | 완료 |
+| 1 | keystore 생성 | `android/key.jks` 생성 (PKCS12, 유효기간 ~2053) | 완료 |
+| 2 | key.properties 설정 | `android/key.properties` 생성 (gitignore 처리됨, 비밀번호 백업 필요) | 완료 |
+| 3 | build.gradle 서명 설정 | `android/app/build.gradle.kts`에 signingConfigs 추가 | 완료 |
+| 4 | 릴리즈 빌드 | `flutter build appbundle` → `build/app/outputs/bundle/release/app-release.aab` (46.6MB) | 완료 |
+| 5 | 플레이 콘솔 앱 등록 | 앱 이름·설명·스크린샷·기능 그래픽 업로드. 기능 그래픽은 `basicdata/screenshots/feature_graphic.png`(1024x500). 스크린샷은 캡션 카드 5종 `basicdata/screenshots/promo/promo_1~5_*.png`(1080x1920) 권장 업로드 | 대기 (수동) |
+| 6 | 개인정보처리방침 URL 등록 | `https://1sanguk.github.io/electronicApp/basicdata/` (페이지 정상 동작 확인됨) | 대기 (수동) |
+| 7 | AAB 업로드 및 심사 제출 | 심사 통과까지 보통 1~3일 소요 | 대기 (수동) |
+
+**중요**: `android/key.jks`와 `android/key.properties`는 git에 포함되지 않음 (의도적). 이 키를 잃으면 앱을 업데이트할 수 없으므로 별도 백업 필요 (storePassword=keyPassword=`NtUShjViQAZ10HgWaDJKYn6T`, alias=`key`).
 
 ## 낮음
 

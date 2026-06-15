@@ -1,4 +1,4 @@
-package com.example.electronic_app
+package com.sopstudio.bodycurrent
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,11 +1,11 @@
-# 건강 전류 측정기 (Body Current Tracker)
+# 맨발걷기 - 전류 기록기
 
 ## 앱 개요
 
-손가락을 화면에 올려놓으면 터치 센서 데이터를 기반으로 생체 전류값(μA)을 시뮬레이션하여 보여주는 건강 추적 앱.
+손가락을 화면에 올려놓으면 터치 센서 데이터를 기반으로 전류 패턴 값(μA)을 시뮬레이션하여 기록하는 앱.
 
-- 앱 표시 이름: **건강 전류 측정기** (AndroidManifest `android:label`, iOS `CFBundleDisplayName`)
-- 패키지명: `electronic_app`
+- 앱 표시 이름: **맨발걷기 - 전류 기록기** (AndroidManifest `android:label`, iOS `CFBundleDisplayName`)
+- 패키지명: `com.sopstudio.bodycurrent`
 - 버전: `1.0.0+1`
 
 > 실제 의료기기가 아닌 웰니스 추적 목적의 시뮬레이션 앱입니다.
