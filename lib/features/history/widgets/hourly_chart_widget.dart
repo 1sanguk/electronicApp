@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/daily_summary.dart';
+import 'right_axis_labels.dart';
 
 class HourlyChartWidget extends StatefulWidget {
   final List<DailySummary> summaries;
@@ -26,8 +27,7 @@ class _HourlyChartWidgetState extends State<HourlyChartWidget> {
     if (!_scroll.hasClients) return;
     const totalW = 24 * _pointW;
     const leftPad = 8.0;
-    const rightPad = 16.0;
-    const chartAreaW = totalW - leftPad - rightPad;
+    const chartAreaW = totalW - leftPad;
     final hour = DateTime.now().hour;
     final xPos = leftPad + (hour / 23.0) * chartAreaW;
     final viewportW = _scroll.position.viewportDimension;
@@ -61,21 +61,29 @@ class _HourlyChartWidgetState extends State<HourlyChartWidget> {
       ..sort((a, b) => a.x.compareTo(b.x));
 
     return LayoutBuilder(builder: (_, constraints) {
-      final totalW = (24 * _pointW).clamp(constraints.maxWidth, double.infinity);
+      final totalW = (24 * _pointW)
+          .clamp(constraints.maxWidth - RightAxisLabels.width, double.infinity);
 
       return _chartShell(
-        SingleChildScrollView(
-          controller: _scroll,
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          child: SizedBox(
-            width: totalW,
-            height: 220,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 16, 16, 8),
-              child: LineChart(_buildData(spots, byHour)),
+        Row(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                controller: _scroll,
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: SizedBox(
+                  width: totalW,
+                  height: 220,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 16, 0, 8),
+                    child: LineChart(_buildData(spots, byHour)),
+                  ),
+                ),
+              ),
             ),
-          ),
+            const RightAxisLabels(minY: 20, maxY: 100, interval: 20, bottomReservedSize: 28),
+          ],
         ),
       );
     });
@@ -98,23 +106,14 @@ class _HourlyChartWidgetState extends State<HourlyChartWidget> {
         titlesData: FlTitlesData(
           leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              interval: 20,
-              reservedSize: 40,
-              getTitlesWidget: (v, _) => Text('${v.toInt()}',
-                  style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
-            ),
-          ),
+          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              interval: 3,
+              interval: 1,
               reservedSize: 28,
               getTitlesWidget: (v, meta) {
                 final h = v.toInt();
-                if (h % 3 != 0) return const SizedBox.shrink();
                 return Text('$h시',
                     style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary));
               },

@@ -1,5 +1,71 @@
 # 버전 히스토리
 
+## v1.3.2 (2026-06-16)
+
+### 기록 화면 — 차트 가독성 개선 (versionCode 6 → 7, 1.0.4+6 → 1.0.4+7)
+
+> 코드상 네이티브 변경은 없으나, versionCode 6은 이미 Play Console에 업로드되어 사용됨 → 신규 업로드를 위해 versionCode 7로 증가
+
+**시간별 탭 — x축 라벨 1시간 간격으로 표시**
+- 기존에는 3시간 간격(0, 3, 6, 9...시)으로만 라벨이 표시되어 특정 시각의 값을 차트에서 바로 읽기 어려움
+- `bottomTitles`의 `interval`을 3 → 1로 변경, `h % 3 != 0` 필터 제거 → 0시~23시 전체 라벨 표시
+
+**모든 차트 — 가로 스크롤 시 Y축(우측) 고정**
+- 기존에는 Y축 숫자 라벨이 차트 콘텐츠와 함께 스크롤되어 화면 밖으로 벗어나면 값을 가늠하기 어려움
+- 신규 위젯 `RightAxisLabels`(빈 데이터 + `rightTitles`만 표시하는 별도 LineChart)를 추가하고, `Row(Expanded(스크롤 차트) + RightAxisLabels)` 구조로 재구성하여 Y축 라벨이 화면 우측에 고정되도록 변경
+- 시간별/일간/주간/월간 4개 차트 모두 적용
+
+| 분류 | 파일 |
+|------|------|
+| 추가 | `lib/features/history/widgets/right_axis_labels.dart` |
+| 수정 | `lib/features/history/widgets/hourly_chart_widget.dart` (1시간 간격 라벨, RightAxisLabels 적용) |
+| 수정 | `lib/features/history/widgets/daily_chart_widget.dart` (RightAxisLabels 적용) |
+| 수정 | `lib/features/history/widgets/weekly_chart_widget.dart` (RightAxisLabels 적용) |
+| 수정 | `lib/features/history/widgets/monthly_chart_widget.dart` (RightAxisLabels 적용) |
+| 수정 | `pubspec.yaml` (version 1.0.4+6 → 1.0.4+7) |
+
+---
+
+## v1.3.1 (2026-06-15)
+
+### 기록/설정 개선 + R8 난독화 활성화 (versionCode 5 → 6)
+
+**기록 화면 — 시간별 탭 "오늘 측정 데이터 없음" 버그 수정**
+- 단일 측정 저장(`_saveMeasurement`) 후 `hourlySummariesProvider`/`weeklySummariesProvider` invalidate가 빠져 있어, 오늘 측정한 기록이 "오늘 시간별 기록" 목록에는 보이지만 시간별 차트는 캐시된 빈 데이터를 계속 표시
+- `measure_screen.dart`, `continuous_measure_widget.dart`의 저장 로직에 두 provider invalidate 추가
+
+**설정 화면 — 앱 버전 자동 동기화**
+- 하단 버전 표기("v1.0.0")가 하드코딩되어 실제 앱 버전과 불일치
+- `package_info_plus` 패키지 추가, `packageInfoProvider`(`PackageInfo.fromPlatform()`)로 `pubspec.yaml`의 `version:` 값을 자동 반영
+
+**설정 화면 — "자동 측정" 토글 신규**
+- "측정 시간" 카드 바로 아래 추가
+- ON: 단일 측정 완료 후 저장 버튼 없이 자동으로 DB에 저장
+- OFF(기본값): 기존처럼 저장/다시 측정 버튼 표시, 수동 저장
+- `AppSettings.autoSave` (SharedPreferences 키 `setting_auto_save`), `ResultDisplayWidget.showActions`로 버튼 노출 여부 제어
+
+**R8/ProGuard 난독화 활성화 (가독화 파일 누락 경고 해결)**
+- versionCode 5 업로드 시 Play Console에서 "이 App Bundle 유형과 연결된 가독화 파일이 없습니다" 경고
+- versionCode 6으로 올리고 `android/app/build.gradle.kts`의 release buildType에 `isMinifyEnabled = true`, `isShrinkResources = true`, `proguardFiles(...)` 추가 → mapping 파일이 AAB에 자동 포함됨
+- `android/app/proguard-rules.pro` 신규 작성:
+  - AdMob(`com.google.android.gms.ads.**`) keep 규칙
+  - **WorkManager/Room keep 규칙** — versionCode 3→4에서 R8이 `androidx.work.impl.WorkDatabase` 리플렉션 클래스를 제거해 실행 즉시 크래시난 적이 있어, `androidx.work.**`, `* extends RoomDatabase`, `**_Impl` 클래스를 keep 처리하여 재발 방지
+- `flutter build appbundle --release` 빌드 성공 (55.3MB → R8 적용 후 52.7MB)
+- ⚠️ 실제 설치 후 정상 실행되는지(WorkManager 크래시 재발 여부) 에뮬레이터/기기에서 확인 필요
+
+| 분류 | 파일 |
+|------|------|
+| 수정 | `lib/features/measure/measure_screen.dart` (provider invalidate 추가, 자동 측정 분기) |
+| 수정 | `lib/features/measure/widgets/continuous_measure_widget.dart` (provider invalidate 추가) |
+| 수정 | `lib/features/measure/widgets/result_display_widget.dart` (`showActions` 옵션 추가) |
+| 수정 | `lib/features/settings/settings_screen.dart` (자동 측정 토글, 버전 자동 표시) |
+| 수정 | `lib/shared/providers.dart` (`packageInfoProvider` 추가) |
+| 수정 | `pubspec.yaml` (`package_info_plus` 의존성 추가, version 1.0.4+5 → 1.0.4+6) |
+| 수정 | `android/app/build.gradle.kts` (R8/ProGuard 활성화, proguardFiles 지정) |
+| 추가 | `android/app/proguard-rules.pro` (AdMob + WorkManager/Room keep 규칙) |
+
+---
+
 ## v1.3.0 (2026-06-15)
 
 ### 구글 플레이 배포 준비 + 앱 리브랜딩

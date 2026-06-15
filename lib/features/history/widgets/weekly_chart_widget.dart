@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/daily_summary.dart';
+import 'right_axis_labels.dart';
 
 class WeeklyChartWidget extends StatefulWidget {
   final List<DailySummary> summaries;
@@ -41,21 +42,29 @@ class _WeeklyChartWidgetState extends State<WeeklyChartWidget> {
     if (widget.summaries.isEmpty) return _empty();
 
     return LayoutBuilder(builder: (_, constraints) {
-      final totalW = max(constraints.maxWidth, widget.summaries.length * _pointW);
+      final totalW = max(constraints.maxWidth - RightAxisLabels.width,
+          widget.summaries.length * _pointW);
 
       return _chartShell(
-        SingleChildScrollView(
-          controller: _scroll,
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          child: SizedBox(
-            width: totalW,
-            height: 220,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 16, 16, 8),
-              child: BarChart(_buildData()),
+        Row(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                controller: _scroll,
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: SizedBox(
+                  width: totalW,
+                  height: 220,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 16, 0, 8),
+                    child: BarChart(_buildData()),
+                  ),
+                ),
+              ),
             ),
-          ),
+            const RightAxisLabels(minY: 0, maxY: 100, interval: 20, bottomReservedSize: 28),
+          ],
         ),
       );
     });
@@ -75,15 +84,7 @@ class _WeeklyChartWidgetState extends State<WeeklyChartWidget> {
         titlesData: FlTitlesData(
           leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              interval: 20,
-              reservedSize: 40,
-              getTitlesWidget: (v, _) => Text('${v.toInt()}',
-                  style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
-            ),
-          ),
+          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
