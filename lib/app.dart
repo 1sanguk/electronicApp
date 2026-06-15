@@ -5,7 +5,7 @@ import 'core/theme/app_theme.dart';
 import 'features/history/history_screen.dart';
 import 'features/measure/measure_screen.dart';
 import 'features/settings/settings_screen.dart';
-import 'shared/widgets/ad_banner_placeholder.dart';
+import 'shared/widgets/ad_banner_widget.dart';
 
 class ElectronicApp extends StatelessWidget {
   const ElectronicApp({super.key});
@@ -46,7 +46,7 @@ class _HomeShellState extends State<_HomeShell> {
         bottom: false,
         child: Column(
           children: [
-            const AdBannerPlaceholder(),
+            const AdBannerWidget(),
             Expanded(
               child: IndexedStack(
                 index: _currentIndex,

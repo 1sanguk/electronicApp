@@ -31,17 +31,72 @@
 - `lib/app.dart`의 `MaterialApp.title`이 여전히 "생체 전류 측정"이었음 → "맨발걷기 - 전류 기록기"로 수정
 - 설정 화면 하단 버전 표기 "생체 전류 측정 앱 v1.0.0" → "맨발걷기 - 전류 기록기 v1.0.0"로 수정
 
+**광고 (Google AdMob) 연동**
+- `google_mobile_ads: ^9.0.0` 패키지 추가
+- 기존 정적 placeholder(`AdBannerPlaceholder`, "광고 영역" 텍스트만 표시)를 실제 `BannerAd` 로딩 위젯(`AdBannerWidget`)으로 교체. 로딩 전/실패 시에는 동일한 placeholder UI를 fallback으로 표시
+- `lib/main.dart`에 `MobileAds.instance.initialize()` 추가
+- `lib/core/constants/ad_constants.dart` 신규 — 디버그 빌드는 Google 테스트 광고 ID, 릴리즈 빌드는 `_prodAndroidBannerId`/`_prodIosBannerId` 사용
+- AndroidManifest.xml / Info.plist에 AdMob App ID 메타데이터 추가, Info.plist에 `NSUserTrackingUsageDescription` 추가
+- AdMob은 광고 식별자 등 기기 정보를 수집하므로 `basicdata/index.html`(개인정보처리방침)에 "광고" 항목 추가, `basicdata/store_listing.md`의 "외부 전송 없음, 인터넷 연결 불필요" 문구 제거
+- `flutter analyze` / `flutter test` 통과 확인
+
+**Android 실 AdMob ID 적용**
+- AndroidManifest.xml의 `com.google.android.gms.ads.APPLICATION_ID`를 실제 App ID(`ca-app-pub-7239576101906864~9069492188`)로 교체
+- `ad_constants.dart`의 `_prodAndroidBannerId`를 실제 배너 광고 단위 ID(`ca-app-pub-7239576101906864/6139200809`)로 교체
+- iOS는 아직 AdMob 앱 미등록 — Google 테스트 ID 유지 (iOS 출시 전 별도 등록 필요)
+- GDPR/UMP 동의(EEA·영국 사용자) 처리는 미구현 — `basicdata/nexttodo.md`에 중요 항목으로 등록
+
+**단일 측정 — 자동 시작으로 전환**
+- "측정 시작" 버튼 제거. 손가락을 패드에 올리는 순간 자동으로 측정(3초/5초) 시작
+- 기존에는 버튼을 눌러 측정을 시작한 뒤 패드에 손가락을 올리는 2단계였으나, 패드 터치 한 번으로 단축
+- idle/scanning 상태를 하나의 `Listener`로 묶어 손가락을 떼지 않고도 측정 중 애니메이션으로 자연스럽게 전환되도록 구현
+
+**데모 데이터 제거**
+- 첫 실행 시 30일치 가짜 측정값을 자동 삽입하던 `seedDemoDataIfEmpty()`/`shared/demo_data.dart` 제거
+- 실제 배포 빌드에서 사용자가 빈 상태(기록 없음)로 앱을 시작하도록 변경
+
+**실행 즉시 크래시 수정 (versionCode 2 → 3)**
+- versionCode 2 (1.0.1+2)를 내부 테스트에 업로드 후 다운로드하면 앱을 열자마자 크래시 발생
+- 원인: release `AndroidManifest.xml`에 `INTERNET`/`ACCESS_NETWORK_STATE` 권한이 없는 상태에서 `main()`이 `runApp()` 전에 `MobileAds.instance.initialize()`를 호출 → AdMob SDK가 네트워크 권한 없이 초기화되며 예외 발생 → 화면이 뜨기 전에 앱 종료
+- `android/app/src/main/AndroidManifest.xml`에 `INTERNET`, `ACCESS_NETWORK_STATE` 권한 추가 (기존에는 `debug`/`profile` 매니페스트에만 있었음)
+- `lib/main.dart`에서 `MobileAds.instance.initialize()`를 `runApp()` 이후 백그라운드(`unawaited`)로 이동 — 광고 SDK 초기화가 첫 프레임 렌더링을 막지 않도록 함
+
+**실행 즉시 크래시 수정 (versionCode 3 → 4)**
+- versionCode 3 (1.0.2+3)도 동일하게 화면이 뜨기 전 즉시 크래시 — `adb logcat`으로 실제 기기 대신 에뮬레이터(sdk_gphone16k_x86_64)에서 재현 성공
+- 크래시 로그: `androidx.startup.InitializationProvider.onCreate()` → `WorkManagerInitializer` → "Failed to create an instance of androidx.work.impl.WorkDatabase" — Flutter/Dart 코드 실행 전, 앱 프로세스 시작 단계에서 발생
+- 원인: AGP 9.0.1에서 release 빌드의 R8 코드 축소(minify)가 기본적으로 활성화됨(`build.gradle.kts`에 `isMinifyEnabled` 미설정). R8이 Room(WorkManager의 WorkDatabase)이 리플렉션으로 참조하는 클래스를 난독화/축소하면서 DB 초기화 실패
+- `android/app/build.gradle.kts`의 release buildType에 `isMinifyEnabled = false`, `isShrinkResources = false` 명시
+- 에뮬레이터에 release APK 설치 후 정상 실행/화면 렌더링 확인
+
+**기록 화면 시간별 탭 시간대 오류 수정 (versionCode 4 → 5)**
+- "시간별" 탭이 측정 시각을 UTC 기준 시간으로 표시 (예: 로컬 22시 측정 → "13시"로 표시, UTC+9 KST와 9시간 차이)
+- 원인: `queryHourlySummaries`가 UTC로 저장된 `measured_at` 문자열에 SQLite `strftime('%Y-%m-%d %H:00', ...)`을 직접 적용해 UTC 시간을 추출 — `queryWeeklySummaries`/`queryMonthlySummaries`처럼 `.toLocal()` 변환을 거치지 않음
+- `queryByDateRange`로 측정값을 가져온 뒤 Dart에서 `measuredAt.toLocal()`의 시(hour) 기준으로 그룹화하도록 재작성. "오늘 자정" 경계 비교도 `queryByDateRange`의 UTC 변환을 통해 올바르게 처리됨
+- `flutter analyze` / `flutter test` 통과 확인
+
+| 분류 | 파일 |
+|------|------|
+| 수정 | `lib/features/measure/measure_screen.dart` (자동 시작, 시작 버튼 제거) |
+| 수정 | `lib/main.dart` (데모 데이터 시드 호출 제거, MobileAds 초기화를 runApp 이후 백그라운드로 이동) |
+| 삭제 | `lib/shared/demo_data.dart` |
+| 수정 | `android/app/src/main/AndroidManifest.xml` (INTERNET, ACCESS_NETWORK_STATE 권한 추가) |
+| 수정 | `android/app/build.gradle.kts` (release isMinifyEnabled/isShrinkResources = false) |
+| 수정 | `lib/data/repositories/measurement_repository.dart` (queryHourlySummaries 로컬 시간 기준 재작성) |
+
 | 분류 | 파일 |
 |------|------|
 | 수정 | `android/app/build.gradle.kts` (applicationId, namespace, signingConfigs) |
-| 수정 | `android/app/src/main/AndroidManifest.xml` (android:label, CAMERA 권한 제거) |
+| 수정 | `android/app/src/main/AndroidManifest.xml` (android:label, CAMERA 권한 제거, AdMob App ID 메타데이터 추가) |
 | 이동 | `android/app/src/main/kotlin/com/example/electronic_app/MainActivity.kt` → `com/sopstudio/bodycurrent/MainActivity.kt` |
-| 수정 | `ios/Runner/Info.plist` (CFBundleDisplayName) |
+| 수정 | `ios/Runner/Info.plist` (CFBundleDisplayName, AdMob App ID, NSUserTrackingUsageDescription) |
 | 수정 | `assets/icon/app_icon.png` (아이콘 교체) |
-| 수정 | `pubspec.yaml` (description) |
-| 수정 | `README.md`, `basicdata/information.md`, `basicdata/index.html` |
-| 수정 | `lib/app.dart` (MaterialApp title) |
+| 수정 | `pubspec.yaml` (description, google_mobile_ads 의존성 추가) |
+| 수정 | `README.md`, `basicdata/information.md`, `basicdata/index.html`, `basicdata/store_listing.md` |
+| 수정 | `lib/app.dart` (MaterialApp title, AdBannerWidget로 교체) |
+| 수정 | `lib/main.dart` (MobileAds 초기화) |
 | 수정 | `lib/features/settings/settings_screen.dart` (하단 버전 텍스트) |
+| 추가 | `lib/core/constants/ad_constants.dart`, `lib/shared/widgets/ad_banner_widget.dart` |
+| 삭제 | `lib/shared/widgets/ad_banner_placeholder.dart` |
 | 추가 | `basicdata/store_listing.md` |
 | 추가 | `basicdata/screenshots/screenshot_measure.png`, `screenshot_history.png`, `feature_graphic.png` |
 | 추가(미커밋) | `android/key.jks`, `android/key.properties` (gitignore 처리됨) |

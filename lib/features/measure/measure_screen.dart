@@ -196,8 +196,6 @@ class _MeasureScreenState extends ConsumerState<MeasureScreen> {
                   _buildInfoCard(),
                   const SizedBox(height: 24),
                   _buildMainContent(),
-                  const SizedBox(height: 24),
-                  if (_state.scan == _ScanState.idle) _buildStartButton(),
                   const SizedBox(height: 32),
                 ],
               ),
@@ -277,22 +275,21 @@ class _MeasureScreenState extends ConsumerState<MeasureScreen> {
   Widget _buildMainContent() {
     switch (_state.scan) {
       case _ScanState.idle:
-        return FingerPadWidget(
-          isScanning: false,
-          onPointerDownWithRadius: _engine.onPointerDown,
-          onPointerMoveWithRadius: _engine.onPointerMove,
-          onPointerUp: _engine.onPointerUp,
-        );
-
       case _ScanState.scanning:
+        final scanning = _state.scan == _ScanState.scanning;
         return Listener(
-          onPointerDown: (e) => _engine.onPointerDown(e.radiusMajor),
+          onPointerDown: (e) {
+            if (!scanning) _startScan();
+            _engine.onPointerDown(e.radiusMajor);
+          },
           onPointerMove: (e) => _engine.onPointerMove(e.radiusMajor),
           onPointerUp: (_) => _engine.onPointerUp(),
-          child: ScanAnimationWidget(
-            isActive: true,
-            remainingSeconds: _state.remaining,
-          ),
+          child: scanning
+              ? ScanAnimationWidget(
+                  isActive: true,
+                  remainingSeconds: _state.remaining,
+                )
+              : const FingerPadWidget(isScanning: false),
         );
 
       case _ScanState.result:
@@ -308,23 +305,5 @@ class _MeasureScreenState extends ConsumerState<MeasureScreen> {
           ),
         );
     }
-  }
-
-  Widget _buildStartButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: _startScan,
-        icon: const Icon(Icons.play_arrow_rounded, size: 24),
-        label: const Text('측정 시작'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.primary,
-          foregroundColor: Colors.white,
-          minimumSize: const Size(double.infinity, 60),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-        ),
-      ),
-    );
   }
 }

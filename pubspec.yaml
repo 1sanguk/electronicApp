@@ -1,7 +1,7 @@
 name: electronic_app
 description: 맨발걷기 전류 변화 기록 앱 - Barefoot Walking Current Logger
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.4+5
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -30,6 +30,7 @@ dependencies:
   url_launcher: ^6.3.1
 
   cupertino_icons: ^1.0.8
+  google_mobile_ads: ^9.0.0
 
 dev_dependencies:
   flutter_test:

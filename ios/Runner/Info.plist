@@ -43,5 +43,10 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- AdMob 테스트 App ID. 실제 배포 전 본인 AdMob 앱의 App ID로 교체 필요 -->
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>맞춤 광고 제공을 위해 추적 권한을 요청합니다.</string>
 </dict>
 </plist>

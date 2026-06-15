@@ -59,24 +59,17 @@ class MeasurementRepository {
     return rows.map(Measurement.fromMap).toList();
   }
 
-  /// 시간별: 오늘 자정 이후 데이터 (시간당 중앙값)
+  /// 시간별: 오늘 자정 이후 데이터 (시간당 중앙값, 로컬 시간 기준)
   Future<List<DailySummary>> queryHourlySummaries(int hours) async {
-    final db = await _db;
     final now = DateTime.now();
     final todayMidnight = DateTime(now.year, now.month, now.day);
-    final rows = await db.rawQuery('''
-      SELECT
-        strftime('%Y-%m-%d %H:00', measured_at) AS hour,
-        value_ua
-      FROM measurements
-      WHERE measured_at >= ?
-      ORDER BY hour ASC, value_ua ASC
-    ''', [todayMidnight.toIso8601String()]);
+    final measurements = await queryByDateRange(todayMidnight, now);
 
     final Map<String, List<double>> grouped = {};
-    for (final r in rows) {
-      final key = r['hour'] as String;
-      grouped.putIfAbsent(key, () => []).add((r['value_ua'] as num).toDouble());
+    for (final m in measurements) {
+      final local = m.measuredAt.toLocal();
+      final key = '${_toDateKey(local)} ${local.hour.toString().padLeft(2, '0')}:00';
+      grouped.putIfAbsent(key, () => []).add(m.valueUa);
     }
 
     return grouped.entries.map((e) {

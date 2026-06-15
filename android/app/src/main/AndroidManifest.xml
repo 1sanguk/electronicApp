@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
     <application
         android:label="맨발걷기 - 전류 기록기"
         android:name="${applicationName}"
@@ -25,6 +28,10 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2"/>
+        <!-- AdMob App ID (Android: 맨발걷기 - 전류 기록기) -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-7239576101906864~9069492188"/>
     </application>
     <queries>
         <intent>

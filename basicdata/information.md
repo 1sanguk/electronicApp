@@ -6,7 +6,7 @@
 
 - 앱 표시 이름: **맨발걷기 - 전류 기록기** (AndroidManifest `android:label`, iOS `CFBundleDisplayName`)
 - 패키지명: `com.sopstudio.bodycurrent`
-- 버전: `1.0.0+1`
+- 버전: `1.0.4+5`
 
 > 실제 의료기기가 아닌 웰니스 추적 목적의 시뮬레이션 앱입니다.
 
@@ -23,6 +23,7 @@
 | 환경설정 저장 | shared_preferences 2.3.2 |
 | 국제화 유틸 | intl 0.19.0 |
 | 아이콘 생성 | flutter_launcher_icons 0.14.3 (dev) |
+| 광고 | google_mobile_ads 9.0.0 (AdMob 배너) |
 | 플랫폼 | iOS, Android |
 
 ---
@@ -34,7 +35,7 @@
 측정 화면 상단 토글로 **단일 측정** / **연속 측정** 전환.
 
 #### 단일 측정
-- 손가락을 원형 패드에 올리고 3초 또는 5초 유지
+- 별도의 시작 버튼 없이, 손가락을 원형 패드에 올리면 자동으로 측정 시작 (3초 또는 5초)
 - 터치 접촉 면적, 지속 시간, 압력 비율을 수집하여 μA 값 계산
 - 측정 완료 후 저장 / 다시 측정 선택
 
@@ -93,13 +94,18 @@ noise           = 가우시안 노이즈 (stddev=2.5)
 
 ---
 
-## 첫 실행 데모 데이터
+## 광고 (Google AdMob)
 
-`main()` 에서 `seedDemoDataIfEmpty()` 호출. DB가 비어 있을 때만 실행.
+- 화면 최상단 배너 광고: `lib/shared/widgets/ad_banner_widget.dart` (`AdBannerWidget`, 높이 50)
+  - `BannerAd` 로드 성공 시 `AdWidget` 표시, 로딩 전/실패 시 "광고 영역" placeholder 표시
+- 광고 단위 ID: `lib/core/constants/ad_constants.dart` (`AdConstants.bannerAdUnitId`)
+  - 디버그 빌드: Google 공식 테스트 ID 사용
+  - 릴리즈 빌드: `_prodAndroidBannerId` / `_prodIosBannerId` — **현재 테스트 ID가 그대로 들어있음. 실제 배포 전 본인 AdMob 배너 광고 단위 ID로 교체 필요**
+- SDK 초기화: `lib/main.dart`에서 `MobileAds.instance.initialize()` 호출
+- AdMob App ID: `android/app/src/main/AndroidManifest.xml`(`com.google.android.gms.ads.APPLICATION_ID`), `ios/Runner/Info.plist`(`GADApplicationIdentifier`) — **현재 테스트 App ID. 실제 배포 전 교체 필요**
+- iOS는 `NSUserTrackingUsageDescription`도 함께 추가됨 (Info.plist)
 
-- 최근 30일: 하루 2~3회 랜덤 시간 측정값 삽입
-- 오늘: 2~3시간 간격으로 당일 시간별 차트용 데이터 삽입
-- 난수 시드 42 (재현 가능)
+> ⚠️ AdMob SDK는 광고 게재를 위해 광고 식별자(Advertising ID) 등 기기 정보를 수집한다. `basicdata/index.html`(개인정보처리방침)에 광고 관련 항목 반영됨. Play Console "앱 콘텐츠 > 광고" / Data Safety 설문에도 반영 필요.
 
 ---
 
@@ -117,10 +123,11 @@ noise           = 가우시안 노이즈 (stddev=2.5)
 
 ```
 lib/
-├── main.dart                          # 앱 진입점, 데모 데이터 시드
+├── main.dart                          # 앱 진입점
 ├── app.dart                           # MaterialApp + BottomNav 쉘 (측정/기록/설정)
 ├── core/
 │   ├── constants/measurement_constants.dart
+│   ├── constants/ad_constants.dart    # AdMob 광고 단위 ID
 │   └── theme/app_theme.dart
 ├── data/
 │   ├── db/database_helper.dart        # SQLite 싱글턴
@@ -152,7 +159,7 @@ lib/
 │       └── settings_screen.dart       # AppSettings, SettingsNotifier 포함
 └── shared/
     ├── providers.dart                 # Riverpod 글로벌 Provider
-    └── demo_data.dart                 # 첫 실행 시 30일치 시드
+    └── widgets/ad_banner_widget.dart  # 상단 배너 광고 (AdMob)
 ```
 
 ---
@@ -192,4 +199,4 @@ lib/
 | 연속 측정 저장 | 샘플 각각 개별 Measurement | 동일한 조회/집계 로직 재사용 가능 |
 | 일간 탭 범위 | 최근 14일 | 기존 7일에서 2주로 확대하여 추세 파악 용이 |
 | 월간 탭 범위 | 최근 24개월 | 기존 12개월에서 2년으로 확대 |
-| 데모 데이터 시드 | main()에서 DB 비어있을 때만 실행 | 첫 실행 시 차트 빈 화면 방지, 이후 실데이터와 충돌 없음 |
+| 단일 측정 시작 방식 | 별도 버튼 없이 손가락을 패드에 올리면 자동 시작 | 실제 기기에서 더 빠르고 직관적인 측정 흐름 제공 |
