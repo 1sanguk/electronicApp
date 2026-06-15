@@ -186,15 +186,23 @@ class _MeasureScreenState extends ConsumerState<MeasureScreen> {
         _buildModeToggle(mode),
         if (mode == MeasureMode.continuous)
           const Expanded(child: ContinuousMeasureWidget())
-        else ...[
-          const SizedBox(height: 12),
-          _buildInfoCard(),
-          const Spacer(),
-          _buildMainContent(),
-          const Spacer(),
-          if (_state.scan == _ScanState.idle) _buildStartButton(),
-          const SizedBox(height: 32),
-        ],
+        else
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 12),
+                  _buildInfoCard(),
+                  const SizedBox(height: 24),
+                  _buildMainContent(),
+                  const SizedBox(height: 24),
+                  if (_state.scan == _ScanState.idle) _buildStartButton(),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
+          ),
       ],
     );
   }

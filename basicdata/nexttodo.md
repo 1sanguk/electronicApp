@@ -17,6 +17,18 @@
 | 측정 결과 공유 기능 | 단일 측정 결과를 이미지/텍스트로 공유 |
 | 주간 탭 레이블 겹침 | 주 수가 많을 때 "N월 N째주" 레이블이 잘릴 수 있음. 축약 포맷 또는 45도 회전 검토 |
 
+## 구글 플레이 배포 (콘솔 인증 완료 후)
+
+| 순서 | 항목 | 설명 |
+|------|------|------|
+| 1 | keystore 생성 | `keytool -genkey -v -keystore key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias key` |
+| 2 | key.properties 설정 | `android/key.properties` 파일 생성 후 keystore 경로·비밀번호·alias 입력 |
+| 3 | build.gradle 서명 설정 | `android/app/build.gradle`에 signingConfigs 추가 |
+| 4 | 릴리즈 빌드 | `flutter build appbundle` → `build/app/outputs/bundle/release/app-release.aab` |
+| 5 | 플레이 콘솔 앱 등록 | 앱 이름·설명·스크린샷 2장 이상 업로드 |
+| 6 | 개인정보처리방침 URL 등록 | `https://1sanguk.github.io/electronicApp/basicdata/` |
+| 7 | AAB 업로드 및 심사 제출 | 심사 통과까지 보통 1~3일 소요 |
+
 ## 낮음
 
 | 항목 | 설명 |

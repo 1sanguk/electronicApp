@@ -5,5 +5,6 @@ void main() {
   testWidgets('App smoke test', (WidgetTester tester) async {
     await tester.pumpWidget(const ElectronicApp());
     expect(find.text('측정'), findsOneWidget);
+    expect(find.text('광고 영역'), findsOneWidget);
   });
 }

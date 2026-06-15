@@ -5,6 +5,7 @@ import 'core/theme/app_theme.dart';
 import 'features/history/history_screen.dart';
 import 'features/measure/measure_screen.dart';
 import 'features/settings/settings_screen.dart';
+import 'shared/widgets/ad_banner_placeholder.dart';
 
 class ElectronicApp extends StatelessWidget {
   const ElectronicApp({super.key});
@@ -41,9 +42,19 @@ class _HomeShellState extends State<_HomeShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            const AdBannerPlaceholder(),
+            Expanded(
+              child: IndexedStack(
+                index: _currentIndex,
+                children: _screens,
+              ),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
