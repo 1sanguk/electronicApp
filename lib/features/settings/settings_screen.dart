@@ -14,22 +14,26 @@ class AppSettings {
   final MeasurementMethod method;
   final int scanDurationSec;
   final MeasureMode measureMode;
+  final bool autoSave;
 
   const AppSettings({
     this.method = MeasurementMethod.touch,
     this.scanDurationSec = 3,
     this.measureMode = MeasureMode.single,
+    this.autoSave = false,
   });
 
   AppSettings copyWith({
     MeasurementMethod? method,
     int? scanDurationSec,
     MeasureMode? measureMode,
+    bool? autoSave,
   }) =>
       AppSettings(
         method: method ?? this.method,
         scanDurationSec: scanDurationSec ?? this.scanDurationSec,
         measureMode: measureMode ?? this.measureMode,
+        autoSave: autoSave ?? this.autoSave,
       );
 }
 
@@ -37,6 +41,7 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
   static const _keyMethod = 'setting_method';
   static const _keyDuration = 'setting_duration';
   static const _keyMeasureMode = 'setting_measure_mode';
+  static const _keyAutoSave = 'setting_auto_save';
 
   @override
   Future<AppSettings> build() async {
@@ -44,10 +49,12 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
     final methodName = prefs.getString(_keyMethod) ?? MeasurementMethod.touch.name;
     final duration = prefs.getInt(_keyDuration) ?? 3;
     final modeName = prefs.getString(_keyMeasureMode) ?? MeasureMode.single.name;
+    final autoSave = prefs.getBool(_keyAutoSave) ?? false;
     return AppSettings(
       method: MeasurementMethod.values.byName(methodName),
       scanDurationSec: duration,
       measureMode: MeasureMode.values.byName(modeName),
+      autoSave: autoSave,
     );
   }
 
@@ -68,6 +75,12 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
     await prefs.setString(_keyMeasureMode, mode.name);
     state = AsyncData(state.value!.copyWith(measureMode: mode));
   }
+
+  Future<void> setAutoSave(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyAutoSave, value);
+    state = AsyncData(state.value!.copyWith(autoSave: value));
+  }
 }
 
 final settingsProvider = AsyncNotifierProvider<SettingsNotifier, AppSettings>(
@@ -82,6 +95,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settingsAsync = ref.watch(settingsProvider);
+    final packageInfoAsync = ref.watch(packageInfoProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -180,6 +194,37 @@ class SettingsScreen extends ConsumerWidget {
                 }).toList(),
               ),
             ),
+            const SizedBox(height: 12),
+            _SettingCard(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '자동 측정',
+                          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          settings.autoSave
+                              ? '측정 후 자동으로 저장합니다'
+                              : '측정 후 저장 버튼을 눌러야 저장됩니다',
+                          style: const TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: settings.autoSave,
+                    activeThumbColor: AppTheme.primary,
+                    onChanged: (value) =>
+                        ref.read(settingsProvider.notifier).setAutoSave(value),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 24),
             const _SectionHeader(title: '데이터'),
             _SettingCard(
@@ -200,7 +245,10 @@ class SettingsScreen extends ConsumerWidget {
             const SizedBox(height: 32),
             Center(
               child: Text(
-                '맨발걷기 - 전류 기록기 v1.0.0',
+                packageInfoAsync.maybeWhen(
+                  data: (info) => '맨발걷기 - 전류 기록기 v${info.version}',
+                  orElse: () => '맨발걷기 - 전류 기록기',
+                ),
                 style: TextStyle(
                   fontSize: 14,
                   color: AppTheme.textSecondary.withValues(alpha:0.6),

@@ -91,6 +91,7 @@ class _ContinuousMeasureWidgetState
 
     ref.invalidate(hourlySummariesProvider);
     ref.invalidate(dailySummariesProvider);
+    ref.invalidate(weeklySummariesProvider);
     ref.invalidate(monthlySummariesProvider);
     ref.invalidate(measurementsForDateProvider);
 

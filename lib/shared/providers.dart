@@ -1,9 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../data/models/measurement.dart';
 import '../data/repositories/measurement_repository.dart';
 
 final measurementRepoProvider = Provider((_) => MeasurementRepository());
+
+final packageInfoProvider = FutureProvider((_) => PackageInfo.fromPlatform());
 
 final hourlySummariesProvider = FutureProvider((ref) async {
   final repo = ref.read(measurementRepoProvider);

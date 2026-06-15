@@ -7,6 +7,7 @@ class ResultDisplayWidget extends StatelessWidget {
   final MeasurementMethod method;
   final VoidCallback onSave;
   final VoidCallback onRemeasure;
+  final bool showActions;
 
   const ResultDisplayWidget({
     super.key,
@@ -14,6 +15,7 @@ class ResultDisplayWidget extends StatelessWidget {
     required this.method,
     required this.onSave,
     required this.onRemeasure,
+    this.showActions = true,
   });
 
   @override
@@ -85,33 +87,35 @@ class ResultDisplayWidget extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: onSave,
-              child: const Text('저장'),
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: onRemeasure,
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 56),
-                side: const BorderSide(color: AppTheme.primary),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
-                textStyle:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-              child: const Text(
-                '다시 측정',
-                style: TextStyle(color: AppTheme.primary),
+          if (showActions) ...[
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: onSave,
+                child: const Text('저장'),
               ),
             ),
-          ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: onRemeasure,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 56),
+                  side: const BorderSide(color: AppTheme.primary),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  textStyle:
+                      const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+                child: const Text(
+                  '다시 측정',
+                  style: TextStyle(color: AppTheme.primary),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

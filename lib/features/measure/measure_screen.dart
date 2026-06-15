@@ -100,6 +100,11 @@ class _MeasureScreenState extends ConsumerState<MeasureScreen> {
         resultUa: result.valueUa,
       );
     });
+
+    final autoSave = ref.read(settingsProvider).valueOrNull?.autoSave ?? false;
+    if (autoSave) {
+      _saveMeasurement();
+    }
   }
 
   Future<void> _saveMeasurement() async {
@@ -114,7 +119,9 @@ class _MeasureScreenState extends ConsumerState<MeasureScreen> {
       durationMs: _scanDurationSec * 1000,
     ));
 
+    ref.invalidate(hourlySummariesProvider);
     ref.invalidate(dailySummariesProvider);
+    ref.invalidate(weeklySummariesProvider);
     ref.invalidate(monthlySummariesProvider);
     ref.invalidate(measurementsForDateProvider);
 
@@ -293,6 +300,7 @@ class _MeasureScreenState extends ConsumerState<MeasureScreen> {
         );
 
       case _ScanState.result:
+        final autoSave = ref.read(settingsProvider).valueOrNull?.autoSave ?? false;
         return AnimatedSlide(
           offset: Offset.zero,
           duration: const Duration(milliseconds: 400),
@@ -302,6 +310,7 @@ class _MeasureScreenState extends ConsumerState<MeasureScreen> {
             method: _method,
             onSave: _saveMeasurement,
             onRemeasure: _resetToIdle,
+            showActions: !autoSave,
           ),
         );
     }
