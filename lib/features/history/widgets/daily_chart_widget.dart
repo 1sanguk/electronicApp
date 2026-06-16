@@ -62,7 +62,7 @@ class _DailyChartWidgetState extends State<DailyChartWidget> {
                   width: totalW,
                   height: 220,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 16, 0, 8),
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                     child: LineChart(_buildData(spots)),
                   ),
                 ),
@@ -94,9 +94,12 @@ class _DailyChartWidgetState extends State<DailyChartWidget> {
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 28,
+              interval: 1,
               getTitlesWidget: (v, _) {
-                final idx = v.toInt();
-                if (idx < 0 || idx >= widget.summaries.length) return const SizedBox.shrink();
+                final idx = v.round();
+                if (v != idx.toDouble() || idx < 0 || idx >= widget.summaries.length) {
+                  return const SizedBox.shrink();
+                }
                 final date = DateTime.parse(widget.summaries[idx].date);
                 return Text(DateFormat('M/d').format(date),
                     style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary));

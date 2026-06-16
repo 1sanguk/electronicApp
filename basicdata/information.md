@@ -74,13 +74,14 @@
 
 ```
 기준값(base) = 42.0 μA
-duration_factor = clamp(접촉시간ms / 3000, 0.7, 1.3)
+duration_factor = clamp(접촉시간ms / 3000, 0.0, 1.3)  ← 접촉 없으면 0
 radius_factor   = clamp(최대반경px / 40.0, 0.8, 1.2)
 pressure_factor = lerp(0.9, 1.1, 지속압력비율)
 noise           = 가우시안 노이즈 (stddev=2.5)
 
 결과 = base × duration_factor × radius_factor × pressure_factor + noise
-범위 = 28.0 ~ 92.0 μA
+접촉 없음(contactDurationMs == 0) → 즉시 0.0 반환
+범위 = 0.0 ~ 92.0 μA
 ```
 
 연속 측정 시 `MeasurementEngine.sampleNow()` → `TouchMeasurementService.sampleWindow()` → `computeValue()` 경로로 1초마다 샘플링.

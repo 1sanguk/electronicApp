@@ -91,9 +91,11 @@ class TouchMeasurementService {
   }
 
   double computeValue(TouchMeasurementResult result) {
+    if (result.contactDurationMs == 0) return 0.0;
+
     const base = MeasurementConstants.baseValueUa;
 
-    final durationFactor = (result.contactDurationMs / 3000.0).clamp(0.7, 1.3);
+    final durationFactor = (result.contactDurationMs / 3000.0).clamp(0.0, 1.3);
 
     final radiusFactor = result.maxTouchRadiusPx > 0
         ? (result.maxTouchRadiusPx / MeasurementConstants.normalRadiusPx).clamp(0.8, 1.2)

@@ -1,6 +1,6 @@
 class MeasurementConstants {
   static const double baseValueUa = 42.0;
-  static const double minValueUa = 28.0;
+  static const double minValueUa = 0.0;
   static const double maxValueUa = 92.0;
   static const double noiseStdDev = 2.5;
 

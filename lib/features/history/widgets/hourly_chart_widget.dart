@@ -26,7 +26,7 @@ class _HourlyChartWidgetState extends State<HourlyChartWidget> {
   void _centerCurrentHour() {
     if (!_scroll.hasClients) return;
     const totalW = 24 * _pointW;
-    const leftPad = 8.0;
+    const leftPad = 20.0;
     const chartAreaW = totalW - leftPad;
     final hour = DateTime.now().hour;
     final xPos = leftPad + (hour / 23.0) * chartAreaW;
@@ -76,7 +76,7 @@ class _HourlyChartWidgetState extends State<HourlyChartWidget> {
                   width: totalW,
                   height: 220,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 16, 0, 8),
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                     child: LineChart(_buildData(spots, byHour)),
                   ),
                 ),

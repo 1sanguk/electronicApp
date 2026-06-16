@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../data/models/daily_summary.dart';
 import '../../data/models/measurement.dart';
 import '../../shared/providers.dart';
 import 'widgets/daily_chart_widget.dart';
@@ -90,17 +91,62 @@ class _DailyTabState extends ConsumerState<_DailyTab> {
 
   @override
   Widget build(BuildContext context) {
-    final summaries = ref.watch(dailySummariesProvider);
-    return summaries.when(
-      data: (list) => _TabContent(
-        chart: DailyChartWidget(
-          summaries: list,
-          onTap: (d) => setState(() => _selectedDate = d),
+    final summariesAsync = ref.watch(dailySummariesProvider);
+    return summariesAsync.when(
+      data: (summaries) => SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            DailyChartWidget(
+              summaries: summaries,
+              onTap: (d) => setState(() => _selectedDate = d),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _selectedDate != null ? '$_selectedDate 기록' : '최근 14일 기록',
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                  ),
+                ),
+                if (_selectedDate != null)
+                  TextButton(
+                    onPressed: () => setState(() => _selectedDate = null),
+                    child: const Text('전체 보기', style: TextStyle(fontSize: 14, color: AppTheme.primary)),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (_selectedDate == null)
+              // 날짜별 요약 타일 (중앙값, 1개/일)
+              ...summaries.reversed.map((s) => _DailySummaryTile(
+                    summary: s,
+                    onTap: () => setState(() => _selectedDate = s.date),
+                  ))
+            else
+              // 선택한 날짜의 개별 측정 기록
+              Consumer(
+                builder: (context, ref, _) {
+                  final async = ref.watch(measurementsForDateProvider(_selectedDate));
+                  return async.when(
+                    data: (list) => list.isEmpty
+                        ? const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 32),
+                            child: Center(
+                              child: Text('측정 기록이 없습니다',
+                                  style: TextStyle(fontSize: 16, color: AppTheme.textSecondary)),
+                            ),
+                          )
+                        : Column(children: list.map((m) => _MeasurementTile(measurement: m)).toList()),
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => Text('오류: $e'),
+                  );
+                },
+              ),
+          ],
         ),
-        label: _selectedDate != null ? '$_selectedDate 기록' : '최근 14일 기록',
-        measurementsAsync: ref.watch(measurementsForDateProvider(_selectedDate)),
-        showDateFilter: true,
-        onClearFilter: _selectedDate != null ? () => setState(() => _selectedDate = null) : null,
       ),
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('오류: $e')),
@@ -225,6 +271,64 @@ class _TabContent extends StatelessWidget {
             error: (e, _) => Text('오류: $e'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── 일간 요약 타일 (날짜별 중앙값) ───────────────────────────────────────────────
+
+class _DailySummaryTile extends StatelessWidget {
+  final DailySummary summary;
+  final VoidCallback? onTap;
+
+  const _DailySummaryTile({required this.summary, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final date = DateTime.parse(summary.date);
+    final label = DateFormat('M월 d일').format(date);
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2)),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                  const SizedBox(height: 2),
+                  Text('${summary.count}회 측정',
+                      style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+                ],
+              ),
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  summary.avgUa.toStringAsFixed(1),
+                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 4, left: 3),
+                  child: Text('μA', style: TextStyle(fontSize: 14, color: AppTheme.textSecondary)),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
