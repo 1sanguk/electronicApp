@@ -7,6 +7,7 @@ import '../../core/theme/app_theme.dart';
 import '../../data/models/measure_mode.dart';
 import '../../data/models/measurement_method.dart';
 import '../../shared/providers.dart';
+import '../voltage_experiment/voltage_experiment_screen.dart';
 
 // ── Providers ──────────────────────────────────────────────────────────────
 
@@ -240,6 +241,25 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 trailing: const Icon(Icons.delete_outline, color: AppTheme.error),
                 onTap: () => _confirmDelete(context, ref),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const _SectionHeader(title: '실험'),
+            _SettingCard(
+              child: ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text(
+                  '배터리 전압 측정 실험',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                ),
+                subtitle: const Text(
+                  '손가락 접촉 시 배터리 전압 변화 여부 확인 (Android 전용)',
+                  style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+                ),
+                trailing: const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const VoltageExperimentScreen()),
+                ),
               ),
             ),
             const SizedBox(height: 32),

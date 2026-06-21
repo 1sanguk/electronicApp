@@ -6,6 +6,7 @@
 |------|------|
 | 설정에서 측정 시간 반영 | 단일 측정 화면이 `settings.scanDurationSec`를 참조하지 않고 `_scanDurationSec = 3`으로 하드코딩되어 있음. `settingsProvider`에서 읽도록 수정 필요 |
 | 연속 측정 손가락 감지 UX | 현재 연속 측정 중 손가락을 떼도 계속 샘플링됨. 손가락 떼었을 때 경고 또는 자동 일시정지 고려 |
+| 배터리 전압 실험 기능 실기기 테스트 (2026-06-17 구현, 미테스트) | 설정 > "배터리 전압 측정 실험" 추가: `MainActivity.kt`에 `BatteryManager` 기반 MethodChannel(`com.sopstudio.bodycurrent/battery`) 추가, `lib/features/voltage_experiment/`에 기준값 측정 → 1초 간격 샘플링 → 차이(mV) 표시 화면 구현. `flutter analyze` 통과했으나 Gradle/Kotlin 컴파일 미검증(JAVA_HOME 없음) 및 실기기 동작 미확인. 손가락 접촉 시 실제 mV 변화 여부 확인 후 기능 유지/제거 결정 필요 (이론상 터치스크린과 배터리 전압 센싱 회로는 분리되어 변화 없을 가능성 높음) |
 
 ## 중간
 
